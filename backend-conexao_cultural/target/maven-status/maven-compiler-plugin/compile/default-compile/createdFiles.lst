@@ -1,0 +1,7 @@
+com\example\FirebaseConfig.class
+com\example\Entity\FeedPostEntity.class
+com\example\App.class
+com\example\Entity\ArtistaEntity.class
+com\example\Entity\EmpreendedorEntity.class
+com\example\Entity\PublicoEntity.class
+com\example\Service\ArtistaService.class
