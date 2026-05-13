@@ -163,7 +163,9 @@ function AppContent() {
 
   const currentOwnerUserId = tempProfile === 'artist'
     ? (activeArtistProfile?.ownerUserId || 'u_artist_1')
-    : (activeViewerProfile?.ownerUserId || 'u_viewer_1');
+    : tempProfile === 'host'
+      ? 'u_host_1'
+      : (activeViewerProfile?.ownerUserId || 'u_viewer_1');
 
   const currentDisplayName = tempProfile === 'artist'
     ? (activeArtistProfile?.name || 'Artista')
@@ -516,10 +518,18 @@ function AppContent() {
                   }
 
                   ensureAccountCredentials({
-                    ownerUserId: tempProfile === 'artist' ? 'u_artist_1' : 'u_viewer_1',
+                    ownerUserId: tempProfile === 'artist' ? 'u_artist_1' : tempProfile === 'host' ? 'u_host_1' : 'u_viewer_1',
                     email: account.email,
                     password: account.password,
                   });
+
+                  if (tempProfile === 'host') {
+                    navigation.replace('EstablishmentSetup', {
+                      ownerUserId: currentOwnerUserId,
+                      transitionMessage: 'Seu perfil de Anfitrião está pronto. Agora, vamos erguer os muros da sua Taverna!',
+                    });
+                    return;
+                  }
                 } catch (error) {
                   Alert.alert('Erro', error?.message || 'Falha ao salvar perfil.');
                 }

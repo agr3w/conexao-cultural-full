@@ -20,6 +20,7 @@ function normalizePlaceInput(place = {}) {
 
     return {
         id: String(place?.id || `pl_${Date.now()}`),
+        ownerUserId: place?.ownerUserId ? String(place.ownerUserId) : '',
         name: String(place?.name || '').trim(),
         address: String(place?.address || '').trim(),
         type: normalizePlaceType(place?.type),
@@ -52,6 +53,7 @@ export const PLACES = [
         capacity: 180,
         latitude: -25.4284,
         longitude: -49.2733,
+        ownerUserId: '',
     }),
     normalizePlaceInput({
         id: '204',
@@ -67,6 +69,7 @@ export const PLACES = [
         capacity: 420,
         latitude: -25.4354,
         longitude: -49.2713,
+        ownerUserId: '',
     }),
     normalizePlaceInput({
         id: '301',
@@ -82,6 +85,7 @@ export const PLACES = [
         capacity: 260,
         latitude: -25.44,
         longitude: -49.28,
+        ownerUserId: '',
     }),
 ];
 
