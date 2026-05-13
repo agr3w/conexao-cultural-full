@@ -33,9 +33,10 @@ function toUserViewModel(profile) {
   };
 }
 
-export default function UserProfile({ onBack, onEditProfile, viewerProfileId, ownerUserId, refreshTick = 0 }) {
+export default function UserProfile({ onBack, onEditProfile, navigation, viewerProfileId, ownerUserId, refreshTick = 0, userProfile = 'viewer' }) {
   const profile = viewerProfileId ? getViewerProfileById(viewerProfileId) : null;
   const USER = toUserViewModel(profile);
+  const isHost = userProfile === 'host';
 
   const userPosts = useMemo(
     () => getPostsByAuthorHandle(USER.handle, { includeCommunity: true, limit: 20 }),
@@ -123,6 +124,19 @@ export default function UserProfile({ onBack, onEditProfile, viewerProfileId, ow
             ))}
           </ScrollView>
         </View>
+
+        {isHost && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Gestão do Empreendedor</Text>
+            <TouchableOpacity
+              style={styles.managementButton}
+              onPress={() => navigation?.navigate?.('MyTaverns')}
+            >
+              <Ionicons name="business-outline" size={18} color="#111" />
+              <Text style={styles.managementButtonText}>Gerenciar Minhas Tavernas</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* 4. ATIVIDADE (Padrão unificado) */}
         <View style={styles.section}>
@@ -330,6 +344,21 @@ const styles = StyleSheet.create({
   },
   badgeIcon: {
     width: 50,
+  managementButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: THEME.colors.primary,
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  managementButtonText: {
+    color: '#111',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 14,
+  },
     height: 50,
     borderRadius: 25,
     justifyContent: 'center',

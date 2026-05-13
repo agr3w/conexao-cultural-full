@@ -33,6 +33,8 @@ import ArtistInsights from './src/screens/ArtistInsights';
 import CommunityFeed from './src/screens/CommunityFeed';
 import ComposeRitual from './src/screens/ComposeRitual';
 import EditProfile from './src/screens/EditProfile';
+import EstablishmentSetup from './src/screens/EstablishmentSetup';
+import MyTaverns from './src/screens/MyTaverns';
 import MyTavernAgenda from './src/screens/MyTavernAgenda';
 import ContractProposal from './src/screens/ContractProposal';
 import ApplicantList from './src/screens/ApplicantList';
@@ -347,11 +349,13 @@ function AppContent() {
           name="UserProfileTab"
           options={{ title: 'Grimório' }}
         >
-          {() => (
+          {({ navigation }) => (
             <UserProfile
+              navigation={navigation}
               viewerProfileId={activeViewerProfileId}
               ownerUserId={currentOwnerUserId}
               refreshTick={feedRefreshTick}
+              userProfile={tempProfile}
               onBack={() => navigationRef.navigate('MainTabs', { screen: 'FeedTab' })}
               onEditProfile={() => {
                 setPendingEditTarget({ type: 'viewer', id: activeViewerProfileId });
@@ -744,6 +748,10 @@ function AppContent() {
         </Stack.Screen>
 
         <Stack.Screen name="MyTavernAgenda" component={MyTavernAgenda} />
+
+        <Stack.Screen name="MyTaverns" component={MyTaverns} />
+
+        <Stack.Screen name="EstablishmentSetup" component={EstablishmentSetup} />
 
         <Stack.Screen name="ApplicantList" component={ApplicantList} />
 

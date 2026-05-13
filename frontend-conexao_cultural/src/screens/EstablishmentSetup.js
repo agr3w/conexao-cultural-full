@@ -3,42 +3,22 @@ import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View 
 import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '../styles/colors';
 
-const VIBE_TAGS = ['Rock', 'Jazz', 'Open Mic', 'Intimista', 'MPB', 'Acústico'];
-
-const GALLERY_SLOTS = [1, 2, 3, 4];
+const TYPE_OPTIONS = ['Pizzaria', 'Bar', 'Casa de Shows', 'Café', 'Clube'];
+const VIBE_TAGS = ['Gótica', 'Rock Clássico', 'Underground', 'Jazz Noir', 'Acústica', 'Intimista'];
 
 export default function EstablishmentSetup({ navigation }) {
   const [establishmentName, setEstablishmentName] = useState('');
+  const [establishmentType, setEstablishmentType] = useState('Bar');
+  const [establishmentVibe, setEstablishmentVibe] = useState('Rock Clássico');
   const [description, setDescription] = useState('');
   const [address, setAddress] = useState('');
-  const [selectedVibes, setSelectedVibes] = useState(['Rock']);
-  const [galleryCount, setGalleryCount] = useState(1);
-
-  const galleryItems = useMemo(
-    () => GALLERY_SLOTS.map((slot) => ({ id: `slot_${slot}`, filled: slot <= galleryCount })),
-    [galleryCount]
-  );
-
-  const toggleVibe = (vibe) => {
-    setSelectedVibes((prev) => {
-      if (prev.includes(vibe)) {
-        return prev.filter((item) => item !== vibe);
-      }
-
-      return [...prev, vibe];
-    });
-  };
-
-  const addGallerySlot = () => {
-    setGalleryCount((prev) => Math.min(prev + 1, GALLERY_SLOTS.length));
-  };
 
   const handleSave = () => {
     const safeName = establishmentName.trim() || 'Sua Taverna';
 
     Alert.alert(
-      'Taverna consagrada',
-      `${safeName} foi configurada com sucesso.`,
+      'Local consagrado',
+      `${safeName} foi cadastrado com sucesso.`,
       [
         {
           text: 'OK',
@@ -51,8 +31,8 @@ export default function EstablishmentSetup({ navigation }) {
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.hero}>
-        <Text style={styles.title}>Forja do Estabelecimento</Text>
-        <Text style={styles.subtitle}>Dê alma, textura e identidade à sua taverna.</Text>
+        <Text style={styles.title}>Forja de Locais</Text>
+        <Text style={styles.subtitle}>Dê alma, textura e identidade ao seu espaço.</Text>
       </View>
 
       <View style={styles.card}>
@@ -65,17 +45,49 @@ export default function EstablishmentSetup({ navigation }) {
           style={styles.input}
         />
 
-        <Text style={styles.label}>Biografia / Descrição do Lugar</Text>
+        <Text style={styles.label}>Tipo de Estabelecimento</Text>
+        <View style={styles.chipRow}>
+          {TYPE_OPTIONS.map((type, index) => {
+            const selected = establishmentType === type;
+            return (
+              <TouchableOpacity
+                key={`${type}-${index}`}
+                style={[styles.chip, selected && styles.chipSelected]}
+                onPress={() => setEstablishmentType(type)}
+              >
+                <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{type}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        <Text style={styles.label}>Vibe da Casa</Text>
+        <View style={styles.chipRow}>
+          {VIBE_TAGS.map((vibe, index) => {
+            const selected = establishmentVibe === vibe;
+            return (
+              <TouchableOpacity
+                key={`${vibe}-${index}`}
+                style={[styles.chip, selected && styles.chipSelected]}
+                onPress={() => setEstablishmentVibe(vibe)}
+              >
+                <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{vibe}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        <Text style={styles.label}>Descrição do que o local procura</Text>
         <TextInput
           value={description}
           onChangeText={setDescription}
-          placeholder="Conte a vibe, a energia e o que faz sua casa especial."
+          placeholder="Ex: Procuramos bandas de Doom Metal e Jazz experimental."
           placeholderTextColor="#6E6E6E"
           style={[styles.input, styles.textArea]}
           multiline
         />
 
-        <Text style={styles.label}>Endereço Completo</Text>
+        <Text style={styles.label}>Endereço</Text>
         <View style={styles.addressWrap}>
           <Ionicons name="location-outline" size={18} color={THEME.colors.primary} style={styles.addressIcon} />
           <TextInput
@@ -88,50 +100,8 @@ export default function EstablishmentSetup({ navigation }) {
         </View>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Vibes da Casa</Text>
-        <View style={styles.tagRow}>
-          {VIBE_TAGS.map((tag, index) => {
-            const selected = selectedVibes.includes(tag);
-            return (
-              <TouchableOpacity
-                key={`${tag}-${index}`}
-                style={[styles.tag, selected && styles.tagSelected]}
-                onPress={() => toggleVibe(tag)}
-                activeOpacity={0.85}
-              >
-                <Text style={[styles.tagText, selected && styles.tagTextSelected]}>{tag}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Galeria de Fotos</Text>
-        <Text style={styles.helperText}>Toque no botão de adicionar para simular o upload de imagens.</Text>
-
-        <View style={styles.galleryGrid}>
-          {galleryItems.map((item) => (
-            <View key={item.id} style={styles.gallerySlot}>
-              {item.filled ? (
-                <>
-                  <Ionicons name="image" size={30} color={THEME.colors.primary} />
-                  <Text style={styles.gallerySlotText}>Foto</Text>
-                </>
-              ) : (
-                <TouchableOpacity style={styles.galleryEmptyAction} onPress={addGallerySlot} activeOpacity={0.85}>
-                  <Ionicons name="add" size={26} color="#1B1B1B" />
-                  <Text style={styles.gallerySlotTextDark}>Adicionar</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
-        </View>
-      </View>
-
       <TouchableOpacity style={styles.submitButton} onPress={handleSave} activeOpacity={0.92}>
-        <Text style={styles.submitButtonText}>Consagrar Taverna</Text>
+        <Text style={styles.submitButtonText}>Consagrar Local</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -210,25 +180,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     paddingVertical: 14,
   },
-  sectionTitle: {
-    color: THEME.colors.primary,
-    fontFamily: 'Cinzel_700Bold',
-    fontSize: 18,
-    marginBottom: 12,
-  },
-  helperText: {
-    color: '#A6A6A6',
-    fontFamily: 'Lato_400Regular',
-    fontSize: 13,
-    marginBottom: 14,
-    lineHeight: 18,
-  },
-  tagRow: {
+  chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
+    marginBottom: 14,
   },
-  tag: {
+  chip: {
     borderWidth: 1,
     borderColor: '#3A3220',
     backgroundColor: '#191714',
@@ -236,52 +194,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
-  tagSelected: {
+  chipSelected: {
     backgroundColor: THEME.colors.primary,
     borderColor: THEME.colors.primary,
   },
-  tagText: {
+  chipText: {
     color: '#D6D6D6',
     fontFamily: 'Lato_700Bold',
     fontSize: 13,
   },
-  tagTextSelected: {
-    color: '#111111',
-  },
-  galleryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  gallerySlot: {
-    width: '47%',
-    aspectRatio: 1.15,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#3A3220',
-    backgroundColor: '#171511',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  galleryEmptyAction: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#E7C95E',
-  },
-  gallerySlotText: {
-    marginTop: 8,
-    color: '#E7C95E',
-    fontFamily: 'Lato_700Bold',
-    fontSize: 12,
-  },
-  gallerySlotTextDark: {
-    marginTop: 8,
+  chipTextSelected: {
     color: '#111111',
     fontFamily: 'Lato_700Bold',
-    fontSize: 12,
+    fontSize: 13,
   },
   submitButton: {
     backgroundColor: THEME.colors.primary,

@@ -13,6 +13,39 @@ const ORACLE_FILTERS = [
   { id: 'community', label: 'Comunidades', icon: 'people' },
 ];
 
+const ORACLE_PLACES = [
+  {
+    id: 'place_oracle_1',
+    type: 'place',
+    name: 'Pizzaria Gótica',
+    category: 'Pizzaria',
+    vibe: 'Gótica',
+    address: 'Rua das Sombras, 1313 - Centro',
+    description: 'Pizzas artesanais, decoração sombria e noites para bandas intensas.',
+    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800',
+  },
+  {
+    id: 'place_oracle_2',
+    type: 'place',
+    name: 'Casa de Rock',
+    category: 'Bar',
+    vibe: 'Rock Clássico',
+    address: 'Av. do Amplificador, 45 - Distrito Musical',
+    description: 'Palco vibrante, chope gelado e espaço para shows autorais e covers.',
+    image: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=800',
+  },
+  {
+    id: 'place_oracle_3',
+    type: 'place',
+    name: 'Clube Underground',
+    category: 'Casa de Shows',
+    vibe: 'Underground',
+    address: 'Travessa do Subsolo, 77 - Galeria Central',
+    description: 'Espaço para experimental, noise, eletrônico e noites fora da curva.',
+    image: 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=800',
+  },
+];
+
 function PressScale({ children, onPress, style, activeOpacity = 0.96 }) {
   const pressAnim = useRef(new Animated.Value(1)).current;
 
@@ -130,6 +163,26 @@ export default function Oracle({ onResultPress }) {
     [topTrendingResults]
   );
 
+  const handleOpenPlace = (place) => {
+    onResultPress?.(place);
+  };
+
+  const renderPlaceCard = ({ item }) => (
+    <PressScale
+      style={styles.placeCardWrap}
+      onPress={() => handleOpenPlace(item)}
+    >
+      <View style={styles.placeCard}>
+        <Image source={{ uri: item.image }} style={styles.placeImage} />
+        <View style={styles.placeOverlay} />
+        <View style={styles.placeContent}>
+          <Text style={styles.placeName} numberOfLines={1}>{item.name}</Text>
+          <Text style={styles.placeVibe} numberOfLines={1}>{item.vibe}</Text>
+        </View>
+      </View>
+    </PressScale>
+  );
+
   return (
     <View style={styles.container}>
       <View style={styles.titleWrap}>
@@ -196,6 +249,22 @@ export default function Oracle({ onResultPress }) {
             );
           })}
         </ScrollView>
+      </View>
+
+      <View style={styles.placesSection}>
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>Locais</Text>
+          <Text style={styles.sectionHint}>Cadastrados no grimório</Text>
+        </View>
+
+        <FlatList
+          data={ORACLE_PLACES}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.placesList}
+          renderItem={renderPlaceCard}
+        />
       </View>
 
       {viewMode === 'trending' && (
@@ -386,6 +455,70 @@ const styles = StyleSheet.create({
   },
   filterTextActive: {
     color: '#000',
+  },
+  placesSection: {
+    marginTop: 4,
+    marginBottom: 6,
+  },
+  sectionHeaderRow: {
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    color: THEME.colors.primary,
+    fontFamily: 'Cinzel_700Bold',
+    fontSize: 18,
+  },
+  sectionHint: {
+    color: '#8C8C8C',
+    fontFamily: 'Lato_400Regular',
+    fontSize: 11,
+  },
+  placesList: {
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+    gap: 12,
+  },
+  placeCardWrap: {
+    width: 190,
+    borderRadius: 16,
+  },
+  placeCard: {
+    width: '100%',
+    height: 170,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#2B2B2B',
+    backgroundColor: '#151515',
+  },
+  placeImage: {
+    width: '100%',
+    height: '100%',
+  },
+  placeOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  placeContent: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 12,
+  },
+  placeName: {
+    color: '#F4E1A6',
+    fontFamily: 'Cinzel_700Bold',
+    fontSize: 16,
+    marginBottom: 2,
+  },
+  placeVibe: {
+    color: '#E8E8E8',
+    fontFamily: 'Lato_400Regular',
+    fontSize: 12,
   },
   resultsList: {
     padding: 20,
