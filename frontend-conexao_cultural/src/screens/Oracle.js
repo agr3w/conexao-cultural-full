@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Image, FlatList, Animated } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '../styles/colors';
 import { getOracleResults } from '../service/oracleSearch';
@@ -46,6 +47,33 @@ const ORACLE_PLACES = [
   },
 ];
 
+const ORACLE_ARTISTS = [
+  {
+    id: 'artist_oracle_1',
+    name: 'O Bardo Misterioso',
+    vibe: 'Acústico / Folk',
+    avgPrice: '200 Moedas / R$ 120',
+    availability: 'Disponível hoje',
+    description: 'Canções íntimas para noites de ritual e sala cheia.',
+  },
+  {
+    id: 'artist_oracle_2',
+    name: 'Lira de Aço',
+    vibe: 'Rock / Alternativo',
+    avgPrice: '340 Moedas / R$ 200',
+    availability: 'Janela de agenda aberta',
+    description: 'Energia de palco e presença de arena para o seu local.',
+  },
+  {
+    id: 'artist_oracle_3',
+    name: 'Coro da Madrugada',
+    vibe: 'MPB / Atmosférico',
+    avgPrice: '260 Moedas / R$ 150',
+    availability: 'Últimas vagas desta semana',
+    description: 'Texturas elegantes para rituais mais sofisticados.',
+  },
+];
+
 function PressScale({ children, onPress, style, activeOpacity = 0.96 }) {
   const pressAnim = useRef(new Animated.Value(1)).current;
 
@@ -82,6 +110,7 @@ function PressScale({ children, onPress, style, activeOpacity = 0.96 }) {
 }
 
 export default function Oracle({ onResultPress }) {
+  const navigation = useNavigation();
   const [searchText, setSearchText] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [viewMode, setViewMode] = useState('discover');
@@ -158,6 +187,19 @@ export default function Oracle({ onResultPress }) {
     return topTrendingResults.filter((item) => isRecentlyCreated(item.createdAt));
   }, [viewMode, showOnlyNewTrending, topTrendingResults, filteredResults]);
 
+  const displayedArtists = useMemo(() => {
+    if (selectedFilter !== 'all' && selectedFilter !== 'artist') return [];
+
+    const query = searchText.trim().toLowerCase();
+    return ORACLE_ARTISTS.filter((artist) => {
+      if (!query) return true;
+      return [artist.name, artist.vibe, artist.avgPrice, artist.availability, artist.description]
+        .join(' ')
+        .toLowerCase()
+        .includes(query);
+    });
+  }, [searchText, selectedFilter]);
+
   const newTrendingCount = useMemo(
     () => topTrendingResults.filter((item) => isRecentlyCreated(item.createdAt)).length,
     [topTrendingResults]
@@ -165,6 +207,10 @@ export default function Oracle({ onResultPress }) {
 
   const handleOpenPlace = (place) => {
     onResultPress?.(place);
+  };
+
+  const handleOpenArtist = (artist) => {
+    navigation?.navigate?.('ArtistProfile', { artistData: artist });
   };
 
   const renderPlaceCard = ({ item }) => (
@@ -178,6 +224,34 @@ export default function Oracle({ onResultPress }) {
         <View style={styles.placeContent}>
           <Text style={styles.placeName} numberOfLines={1}>{item.name}</Text>
           <Text style={styles.placeVibe} numberOfLines={1}>{item.vibe}</Text>
+        </View>
+      </View>
+    </PressScale>
+  );
+
+  const renderArtistCard = ({ item }) => (
+    <PressScale style={styles.artistCardWrap} onPress={() => handleOpenArtist(item)}>
+      <View style={styles.artistCard}>
+        <View style={styles.artistArtTop}>
+          <View style={styles.artistPortraitWrap}>
+            <Ionicons name="person-circle-outline" size={42} color={THEME.colors.primary} />
+          </View>
+          <View style={styles.artistPricePill}>
+            <Ionicons name="cash-outline" size={12} color="#111111" />
+            <Text style={styles.artistPriceText}>{item.avgPrice}</Text>
+          </View>
+        </View>
+
+        <Text style={styles.artistName} numberOfLines={1}>{item.name}</Text>
+        <Text style={styles.artistVibe} numberOfLines={1}>{item.vibe}</Text>
+        <Text style={styles.artistDescription} numberOfLines={2}>{item.description}</Text>
+
+        <View style={styles.artistFooter}>
+          <View style={styles.artistAvailabilityPill}>
+            <Ionicons name="sparkles-outline" size={12} color="#E7C95E" />
+            <Text style={styles.artistAvailabilityText}>{item.availability}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color="#777" />
         </View>
       </View>
     </PressScale>
@@ -252,6 +326,31 @@ export default function Oracle({ onResultPress }) {
       </View>
 
       <View style={styles.placesSection}>
+        {selectedFilter === 'artist' && (
+          <View style={styles.artistsSection}>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Artistas</Text>
+              <Text style={styles.sectionHint}>Bardos de última hora</Text>
+            </View>
+
+            <FlatList
+              data={displayedArtists}
+              keyExtractor={(item) => item.id}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.artistsList}
+              renderItem={renderArtistCard}
+              ListEmptyComponent={(
+                <View style={styles.emptyWrapArtist}>
+                  <Ionicons name="musical-notes-outline" size={26} color="#666" />
+                  <Text style={styles.emptyText}>Nenhum artista encontrado no momento.</Text>
+                  <Text style={styles.emptySubText}>Tente outro termo de busca ou limpe os filtros.</Text>
+                </View>
+              )}
+            />
+          </View>
+        )}
+
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionTitle}>Locais</Text>
           <Text style={styles.sectionHint}>Cadastrados no grimório</Text>
@@ -284,6 +383,7 @@ export default function Oracle({ onResultPress }) {
         </View>
       )}
 
+      {selectedFilter !== 'artist' && (
       <FlatList
         data={displayedResults}
         keyExtractor={(item) => item.id}
@@ -316,6 +416,7 @@ export default function Oracle({ onResultPress }) {
           </PressScale>
         )}
       />
+      )}
 
     </View>
   );
@@ -460,6 +561,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 6,
   },
+  artistsSection: {
+    marginBottom: 10,
+  },
   sectionHeaderRow: {
     paddingHorizontal: 20,
     flexDirection: 'row',
@@ -481,6 +585,102 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 8,
     gap: 12,
+  },
+  artistsList: {
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+    gap: 12,
+  },
+  artistCardWrap: {
+    width: 214,
+    borderRadius: 18,
+  },
+  artistCard: {
+    width: '100%',
+    minHeight: 210,
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#453A22',
+    backgroundColor: '#14110B',
+    shadowColor: '#000',
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 4,
+  },
+  artistArtTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 10,
+  },
+  artistPortraitWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: 'rgba(231, 201, 94, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(231, 201, 94, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  artistPricePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: THEME.colors.primary,
+  },
+  artistPriceText: {
+    color: '#111111',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 11,
+  },
+  artistName: {
+    color: '#F4E1A6',
+    fontFamily: 'Cinzel_700Bold',
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  artistVibe: {
+    color: '#E7E7E7',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 12,
+    marginBottom: 8,
+  },
+  artistDescription: {
+    color: '#A9A9A9',
+    fontFamily: 'Lato_400Regular',
+    fontSize: 12,
+    lineHeight: 17,
+    marginBottom: 12,
+  },
+  artistFooter: {
+    marginTop: 'auto',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  artistAvailabilityPill: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#3E3E3E',
+    backgroundColor: '#191919',
+  },
+  artistAvailabilityText: {
+    flex: 1,
+    color: '#E2D08A',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 10,
   },
   placeCardWrap: {
     width: 190,
@@ -560,6 +760,13 @@ const styles = StyleSheet.create({
   emptyWrap: {
     marginTop: 52,
     alignItems: 'center',
+  },
+  emptyWrapArtist: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 18,
+    width: 220,
+    paddingHorizontal: 8,
   },
   emptyText: {
     color: '#666',

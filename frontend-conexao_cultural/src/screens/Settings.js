@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, TextInput } from 'react-native';
+import { Alert, View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, TextInput } from 'react-native';
+import { CommonActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '../styles/colors';
 import Button from '../components/Button';
@@ -29,6 +30,7 @@ const buildNextDays = (count = 30) => {
 export default function Settings({
   onBack,
   onLogout,
+  navigation,
   userProfile = 'viewer',
   onEditProfile,
   onOpenHiddenPosts,
@@ -139,6 +141,36 @@ export default function Settings({
       month: '2-digit',
       year: 'numeric',
     });
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Sair do Conexão Cultural',
+      'Deseja realmente fechar o seu Grimório e sair do Conexão Cultural?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Sair',
+          style: 'destructive',
+          onPress: () => {
+            if (navigation?.dispatch) {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: 'Onboarding' }],
+                })
+              );
+              return;
+            }
+
+            onLogout?.();
+          },
+        },
+      ]
+    );
   };
 
   const categories = [
@@ -413,7 +445,7 @@ export default function Settings({
           </>
         )}
 
-        <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="power" size={20} color="#8A0B0B" />
           <Text style={styles.logoutText}>Quebrar o Pacto (Sair)</Text>
         </TouchableOpacity>

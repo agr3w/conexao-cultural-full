@@ -11,14 +11,15 @@ import { getPostsByAuthorHandle } from '../service/feedPosts';
 const { height } = Dimensions.get('window');
 
 function toArtistViewModel(profile) {
+  const handleBase = profile?.handle || `@${String(profile?.name || 'artista').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')}`;
   return {
     name: profile.name,
-    handle: profile.handle,
+    handle: handleBase,
     vibe: profile.vibe || 'Sem vibe definida',
     entity: profile.entity || 'Artista',
     bio: profile.bio || 'Este artista ainda não preencheu a bio.',
     cover: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=800',
-    avatar: profile?.avatarUrl || '',
+    avatar: profile?.avatarUrl || profile?.image || '',
     avatarFallbackStyle: profile?.avatarFallbackStyle || 'sigil',
     links: {
       spotify: profile?.links?.portfolio || '',
@@ -36,9 +37,11 @@ export default function ArtistProfile({
   navigation,
   artistProfileId,
   artistPreviewName,
+  route,
 }) {
+  const artistData = route?.params?.artistData;
   const profile = artistProfileId ? getArtistProfileById(artistProfileId) : null;
-  const ARTIST = profile ? toArtistViewModel(profile) : null;
+  const ARTIST = profile ? toArtistViewModel(profile) : artistData ? toArtistViewModel(artistData) : null;
   const artistPosts = React.useMemo(
     () => getPostsByAuthorHandle(ARTIST?.handle, { includeCommunity: true, limit: 20 }),
     [ARTIST?.handle]

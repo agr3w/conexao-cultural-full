@@ -302,7 +302,7 @@ function AppContent() {
             <Feed
               onOpenMenu={() => setIsMenuOpen(true)}
               onPostClick={openPostDetails}
-              onOpenComposer={() => navigationRef.navigate('ComposeRitual')}
+              onOpenComposer={(params) => navigationRef.navigate('ComposeRitual', params)}
               userProfile={tempProfile}
               onBandPostCreated={handleBandPostCreated}
               refreshTick={feedRefreshTick}
@@ -627,6 +627,7 @@ function AppContent() {
         >
           {({ navigation }) => (
             <Settings
+              navigation={navigation}
               userProfile={tempProfile}
               ownerUserId={currentOwnerUserId}
               refreshTick={feedRefreshTick}

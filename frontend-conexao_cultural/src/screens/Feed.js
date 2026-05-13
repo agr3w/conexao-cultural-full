@@ -95,11 +95,20 @@ export default function Feed({
   }, [onChromeVisibilityChange]);
 
   const currentOwnerId = likeOwnerUserId || ownerUserId;
+  const [feedPosts, setFeedPosts] = useState(() => getVisibleFeedPosts(userProfile, currentOwnerId));
 
-  const posts = useMemo(
-    () => getVisibleFeedPosts(userProfile, currentOwnerId),
-    [userProfile, currentOwnerId, localRefresh, refreshTick]
-  );
+  useEffect(() => {
+    setFeedPosts(getVisibleFeedPosts(userProfile, currentOwnerId));
+  }, [userProfile, currentOwnerId, localRefresh, refreshTick]);
+
+  const handlePostCreated = (createdPost) => {
+    if (!createdPost?.id) {
+      setLocalRefresh((prev) => prev + 1);
+      return;
+    }
+
+    setFeedPosts((current) => [createdPost, ...current.filter((post) => post.id !== createdPost.id)]);
+  };
 
   const refresh = () => {
     setLocalRefresh((prev) => prev + 1);
@@ -425,7 +434,7 @@ export default function Feed({
       </Animated.View>
 
       <FlatList
-        data={posts}
+        data={feedPosts}
         keyExtractor={(item) => item.id}
         style={styles.feedList}
         contentContainerStyle={styles.feedContent}
@@ -455,8 +464,8 @@ export default function Feed({
         }}
       />
 
-      <TouchableOpacity activeOpacity={0.9} style={styles.fab} onPress={onOpenComposer}>
-        <Ionicons name="pencil" size={24} color="#000" />
+      <TouchableOpacity activeOpacity={0.9} style={styles.fab} onPress={() => onOpenComposer?.({ onPostCreated: handlePostCreated })}>
+        <Ionicons name="add" size={28} color="#000" />
       </TouchableOpacity>
 
       <Modal transparent animationType="fade" visible={Boolean(menuPost)} onRequestClose={closeMenu}>

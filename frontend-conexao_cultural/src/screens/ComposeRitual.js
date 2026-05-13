@@ -542,7 +542,7 @@ export default function ComposeRitual({
         ? [selectedPlace?.name, selectedPlace?.address].filter(Boolean).join(' • ')
         : '';
 
-      createPost({
+      const createdPost = createPost({
         userProfile,
         ownerUserId,
         artistProfileId: selectedArtistProfileId,
@@ -589,6 +589,7 @@ export default function ComposeRitual({
       setPollDraft('');
       setPollOptions(['']);
 
+      route?.params?.onPostCreated?.(createdPost);
       route?.params?.onComplete?.();
       onPublished?.();
     } catch (e) {
