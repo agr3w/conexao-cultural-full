@@ -4,18 +4,20 @@ import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { THEME } from '../styles/colors';
-import { createNewPlace } from '../service/places';
+import { createNewPlace, updatePlace } from '../service/places';
 
 const VIBE_TAGS = ['Rock', 'Blues', 'Gótico', 'Jazz Noir', 'Acústica', 'Intimista', 'Eletrônico'];
 
 export default function EstablishmentSetup({ navigation, route }) {
-  const [establishmentName, setEstablishmentName] = useState('');
-  const [selectedVibe, setSelectedVibe] = useState('Rock');
-  const [callText, setCallText] = useState('');
-  const [address, setAddress] = useState('');
+  const placeToEdit = route?.params?.place;
+  const isEditing = route?.params?.mode === 'edit' && !!placeToEdit;
+  const [establishmentName, setEstablishmentName] = useState(placeToEdit?.name || '');
+  const [selectedVibe, setSelectedVibe] = useState(placeToEdit?.vibe || 'Rock');
+  const [callText, setCallText] = useState(placeToEdit?.description || '');
+  const [address, setAddress] = useState(placeToEdit?.address || '');
   const ownerUserId = route?.params?.ownerUserId || '';
   const transitionMessage = route?.params?.transitionMessage;
-  const progressLabel = 'Passo 2 de 2';
+  const progressLabel = isEditing ? 'Editar Taverna' : 'Passo 2 de 2';
   const previewName = establishmentName.trim() || 'Sua Taverna';
   const previewVibe = selectedVibe || 'Vibe não definida';
   const previewAddress = address.trim() || 'Endereço será revelado ao reino';
@@ -23,8 +25,7 @@ export default function EstablishmentSetup({ navigation, route }) {
 
   const handleSave = () => {
     const safeName = establishmentName.trim() || 'Sua Taverna';
-
-    createNewPlace({
+    const placePayload = {
       ownerUserId,
       name: safeName,
       vibe: selectedVibe,
@@ -33,7 +34,15 @@ export default function EstablishmentSetup({ navigation, route }) {
       category: 'Taverna',
       type: 'bar',
       image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800',
-    });
+    };
+
+    if (isEditing) {
+      updatePlace(placeToEdit.id, placePayload);
+      navigation?.goBack?.();
+      return;
+    }
+
+    createNewPlace(placePayload);
 
     navigation?.dispatch?.(
       CommonActions.reset({
@@ -60,8 +69,8 @@ export default function EstablishmentSetup({ navigation, route }) {
           <Ionicons name="hourglass-outline" size={16} color={THEME.colors.primary} />
           <Text style={styles.progressText}>{progressLabel}</Text>
         </View>
-        <Text style={styles.title}>Forja de Locais</Text>
-        <Text style={styles.subtitle}>Dê alma, textura e identidade ao seu espaço.</Text>
+        <Text style={styles.title}>{isEditing ? 'Reformar Taverna' : 'Forja de Locais'}</Text>
+        <Text style={styles.subtitle}>{isEditing ? 'Ajuste os detalhes do seu local antes de voltar ao painel.' : 'Dê alma, textura e identidade ao seu espaço.'}</Text>
       </View>
 
       {transitionMessage ? (
@@ -121,7 +130,7 @@ export default function EstablishmentSetup({ navigation, route }) {
       </View>
 
       <TouchableOpacity style={styles.submitButton} onPress={handleSave} activeOpacity={0.92}>
-        <Text style={styles.submitButtonText}>Consagrar Taverna e Entrar no Reino</Text>
+        <Text style={styles.submitButtonText}>{isEditing ? 'Salvar Alterações' : 'Consagrar Local'}</Text>
       </TouchableOpacity>
 
       <View style={styles.previewSection}>

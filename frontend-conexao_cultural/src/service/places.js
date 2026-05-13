@@ -116,3 +116,23 @@ export function createNewPlace(placeData = {}) {
     PLACES.unshift(normalized);
     return { ...normalized };
 }
+
+export function updatePlace(placeId, placeData = {}) {
+    if (!placeId) {
+        throw new Error('Informe o local a ser atualizado.');
+    }
+
+    const index = PLACES.findIndex((place) => place.id === String(placeId));
+    if (index === -1) {
+        throw new Error('Local não encontrado.');
+    }
+
+    const normalized = normalizePlaceInput({
+        ...PLACES[index],
+        ...placeData,
+        id: String(placeId),
+    });
+
+    PLACES[index] = normalized;
+    return { ...normalized };
+}
