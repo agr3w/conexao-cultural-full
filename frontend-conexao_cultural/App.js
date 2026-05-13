@@ -33,7 +33,9 @@ import ArtistInsights from './src/screens/ArtistInsights';
 import CommunityFeed from './src/screens/CommunityFeed';
 import ComposeRitual from './src/screens/ComposeRitual';
 import EditProfile from './src/screens/EditProfile';
+import MyTavernAgenda from './src/screens/MyTavernAgenda';
 import ContractProposal from './src/screens/ContractProposal';
+import ApplicantList from './src/screens/ApplicantList';
 
 import { getPostById } from './src/service/feedPosts';
 import { getDefaultArtistProfile, createArtistProfile, ensureLabArtistProfile, getArtistProfileById } from './src/service/artistProfiles';
@@ -401,6 +403,11 @@ function AppContent() {
             return;
           }
 
+          if (screen === 'MY_TAVERN_AGENDA') {
+            navigationRef.navigate('MyTavernAgenda');
+            return;
+          }
+
           if (screen === 'SETTINGS') {
             navigationRef.navigate('Settings');
             return;
@@ -659,8 +666,6 @@ function AppContent() {
                 }}
                 onOpenCommunity={() => {
                   if (!profileId) {
-
-            <Stack.Screen name="ContractProposal" component={ContractProposal} />
                     Alert.alert('Ops', 'Este perfil pode ter sido deletado ou não está mais disponível.');
                     return;
                   }
@@ -736,6 +741,12 @@ function AppContent() {
             />
           )}
         </Stack.Screen>
+
+        <Stack.Screen name="MyTavernAgenda" component={MyTavernAgenda} />
+
+        <Stack.Screen name="ApplicantList" component={ApplicantList} />
+
+        <Stack.Screen name="ContractProposal" component={ContractProposal} />
       </Stack.Navigator>
     </NavigationContainer>
   );

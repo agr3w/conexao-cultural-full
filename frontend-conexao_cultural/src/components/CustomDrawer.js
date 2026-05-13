@@ -17,6 +17,7 @@ export default function CustomDrawer({
     avatarFallbackStyle = 'sigil',
 }) {
     const isArtist = userProfile === 'artist';
+    const isHost = userProfile === 'host';
     const [isVisible, setIsVisible] = useState(isOpen);
     const slideAnim = useRef(new Animated.Value(-SCREEN_WIDTH)).current;
     const backdropAnim = useRef(new Animated.Value(0)).current;
@@ -120,7 +121,11 @@ export default function CustomDrawer({
                 <Animated.View style={[styles.itemsContainer, menuItemsStyle]}>
                     <DrawerItem icon="newspaper-outline" label="O Caos (Feed)" onPress={() => onNavigate('FEED')} />
                     <DrawerItem icon="map-outline" label={isArtist ? 'Radar de Prospecção' : 'Radar (Mapa)'} onPress={() => onNavigate('MAP')} />
-                    <DrawerItem icon="calendar-outline" label={isArtist ? 'Contratos Ativos' : 'Rituais (Agenda)'} onPress={() => onNavigate('MY_RITUALS')} />
+                    <DrawerItem
+                        icon="calendar-outline"
+                        label={isArtist ? 'Contratos Ativos' : isHost ? 'Agenda da Taverna' : 'Rituais (Agenda)'}
+                        onPress={() => onNavigate(isHost ? 'MY_TAVERN_AGENDA' : 'MY_RITUALS')}
+                    />
                     {isArtist && <DrawerItem icon="people-outline" label="Taverna dos Bardos" onPress={() => onNavigate('ARTIST_HUB')} />}
                     {isArtist && <DrawerItem icon="analytics-outline" label="Olho Que Tudo Vê" onPress={() => onNavigate('ARTIST_INSIGHTS')} />}
                     <DrawerItem icon="settings-outline" label="Configurações" onPress={() => onNavigate('SETTINGS')} />
