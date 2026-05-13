@@ -689,6 +689,7 @@ function AppContent() {
           {({ navigation, route }) => (
             <PlaceProfile
               place={route?.params?.place}
+              userProfile={tempProfile}
               onBack={() => goBackSafely(navigation)}
               onOpenMap={() => navigation.navigate('MainTabs', { screen: 'MapTab' })}
             />

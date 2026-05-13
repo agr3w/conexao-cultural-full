@@ -4,18 +4,32 @@ import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '../styles/colors';
 
 const WEEK_AGENDA = [
-  { id: 'mon', day: 'Segunda', date: '13/05', status: 'empty' },
-  { id: 'tue', day: 'Terça', date: '14/05', status: 'open' },
-  { id: 'wed', day: 'Quarta', date: '15/05', status: 'confirmed', artistName: 'O Bardo Misterioso' },
-  { id: 'thu', day: 'Quinta', date: '16/05', status: 'empty' },
-  { id: 'fri', day: 'Sexta', date: '17/05', status: 'open' },
-  { id: 'sat', day: 'Sábado', date: '18/05', status: 'confirmed', artistName: 'Cavaleiro do Som' },
-  { id: 'sun', day: 'Domingo', date: '19/05', status: 'empty' },
+  { id: 'mon', day: 'Segunda', date: '13/05', status: 'empty', candidateCount: 0, confirmedCount: 0, health: 5 },
+  { id: 'tue', day: 'Terça', date: '14/05', status: 'open', candidateCount: 3, confirmedCount: 0, health: 28 },
+  { id: 'wed', day: 'Quarta', date: '15/05', status: 'confirmed', artistName: 'O Bardo Misterioso', time: '22:00', candidateCount: 1, confirmedCount: 42, health: 92 },
+  { id: 'thu', day: 'Quinta', date: '16/05', status: 'empty', candidateCount: 0, confirmedCount: 0, health: 10 },
+  { id: 'fri', day: 'Sexta', date: '17/05', status: 'open', candidateCount: 7, confirmedCount: 0, health: 45 },
+  { id: 'sat', day: 'Sábado', date: '18/05', status: 'confirmed', artistName: 'Cavaleiro do Som', time: '23:30', candidateCount: 2, confirmedCount: 87, health: 100 },
+  { id: 'sun', day: 'Domingo', date: '19/05', status: 'empty', candidateCount: 0, confirmedCount: 0, health: 8 },
 ];
+
+function getHealthMeta(health = 0) {
+  if (health >= 80) {
+    return { label: 'Saúde alta', color: '#29D97D' };
+  }
+
+  if (health >= 45) {
+    return { label: 'Saúde estável', color: '#E7C95E' };
+  }
+
+  return { label: 'Saúde baixa', color: '#E36A1F' };
+}
 
 function AgendaCard({ item, navigation }) {
   const isOpen = item.status === 'open';
   const isConfirmed = item.status === 'confirmed';
+  const healthMeta = getHealthMeta(item.health);
+  const healthWidth = `${Math.max(8, Math.min(item.health || 0, 100))}%`;
 
   return (
     <View style={[styles.card, isOpen && styles.cardOpen, isConfirmed && styles.cardConfirmed]}>
@@ -33,14 +47,26 @@ function AgendaCard({ item, navigation }) {
         )}
       </View>
 
+      <View style={styles.healthBlock}>
+        <View style={styles.healthRow}>
+          <View style={[styles.healthDot, { backgroundColor: healthMeta.color }]} />
+          <Text style={styles.healthLabel}>Saúde do Evento</Text>
+          <Text style={styles.healthMeta}>{healthMeta.label}</Text>
+        </View>
+        <View style={styles.healthTrack}>
+          <View style={[styles.healthFill, { width: healthWidth, backgroundColor: healthMeta.color }]} />
+        </View>
+      </View>
+
       {item.status === 'empty' && (
         <>
           <Text style={styles.emptyText}>Nenhum chamado mapeado para este dia.</Text>
+          <Text style={styles.metricText}>Sugestão: crie um evento para começar a atrair presença.</Text>
           <TouchableOpacity
             style={[styles.actionButton, styles.actionButtonPrimary]}
-            onPress={() => Alert.alert('Chamado aberto', 'O chamado para este dia foi preparado no grimório da taverna.')}
+            onPress={() => Alert.alert('Novo ciclo', 'Criar evento ou chamado foi acionado no grimório da taverna.')}
           >
-            <Text style={styles.actionButtonPrimaryText}>Abrir Chamado para Bardo</Text>
+            <Text style={styles.actionButtonPrimaryText}>Criar Evento ou Chamado</Text>
           </TouchableOpacity>
         </>
       )}
@@ -48,11 +74,12 @@ function AgendaCard({ item, navigation }) {
       {item.status === 'open' && (
         <>
           <Text style={styles.openText}>Aguardando Candidatos</Text>
+          <Text style={styles.metricText}>{item.candidateCount} Bardos Candidatados</Text>
           <TouchableOpacity
             style={[styles.actionButton, styles.actionButtonYellow]}
-            onPress={() => navigation?.navigate?.('ApplicantList')}
+            onPress={() => navigation?.navigate?.('ApplicantList', { day: item.day, date: item.date })}
           >
-            <Text style={styles.actionButtonYellowText}>Ver Candidatos</Text>
+            <Text style={styles.actionButtonYellowText}>Gerenciar Candidatos</Text>
           </TouchableOpacity>
         </>
       )}
@@ -63,6 +90,7 @@ function AgendaCard({ item, navigation }) {
             <Ionicons name="checkmark-circle" size={20} color="#29D97D" />
             <Text style={styles.confirmText}>{item.artistName}</Text>
           </View>
+          <Text style={styles.metricText}>{item.time} • {item.confirmedCount} seguidores confirmaram presença</Text>
           <Text style={styles.confirmHelper}>Show confirmado e pronto para o ritual.</Text>
         </>
       )}
@@ -131,6 +159,41 @@ const styles = StyleSheet.create({
     borderColor: '#214C2E',
     backgroundColor: '#0F1A11',
   },
+  healthBlock: {
+    marginBottom: 14,
+  },
+  healthRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  healthDot: {
+    width: 9,
+    height: 9,
+    borderRadius: 999,
+    marginRight: 8,
+  },
+  healthLabel: {
+    color: '#EAEAEA',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 12,
+  },
+  healthMeta: {
+    marginLeft: 8,
+    color: '#A0A0A0',
+    fontFamily: 'Lato_400Regular',
+    fontSize: 12,
+  },
+  healthTrack: {
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: '#222',
+    overflow: 'hidden',
+  },
+  healthFill: {
+    height: '100%',
+    borderRadius: 999,
+  },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -165,6 +228,12 @@ const styles = StyleSheet.create({
   emptyText: {
     color: '#C9C9C9',
     fontFamily: 'Lato_400Regular',
+    marginBottom: 12,
+  },
+  metricText: {
+    color: '#D8D8D8',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 13,
     marginBottom: 12,
   },
   openText: {

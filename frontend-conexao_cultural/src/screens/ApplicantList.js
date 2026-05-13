@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '../styles/colors';
@@ -7,21 +7,33 @@ const APPLICANTS = [
   {
     id: 'app_1',
     name: 'O Bardo Misterioso',
+    artistProfileId: 'applicant_artist_1',
     vibe: 'Acústico / Folk',
+    repertoire: 'Cover 80s / Baladas de taverna',
+    instrumentation: 'Voz e Violão',
+    bio: 'Entrega atmosfera íntima, repertório afetivo e conduz a noite com presença suave.',
     rating: 4.8,
     xp: 'XP 920',
   },
   {
     id: 'app_2',
     name: 'Lira de Aço',
+    artistProfileId: 'applicant_artist_2',
     vibe: 'Rock / Alternativo',
+    repertoire: 'Autoral Indie / Rock de garagem',
+    instrumentation: 'Banda Completa',
+    bio: 'Mistura energia de palco com letras autorais e mantém o público em alta rotação.',
     rating: 4.5,
     xp: 'XP 870',
   },
   {
     id: 'app_3',
     name: 'Coro da Madrugada',
+    artistProfileId: 'applicant_artist_3',
     vibe: 'MPB / Atmosférico',
+    repertoire: 'MPB contemporânea / versões elegantes',
+    instrumentation: 'Voz, teclado e percussão leve',
+    bio: 'Ideal para casas que buscam sofisticação e um clima envolvente sem perder movimento.',
     rating: 4.9,
     xp: 'XP 1.040',
   },
@@ -34,18 +46,40 @@ function getStarFill(index, rating) {
   return 'star-outline';
 }
 
-function ApplicantCard({ item, navigation }) {
+function ApplicantCard({ item, navigation, eventLabel }) {
   const handleHire = () => {
     Alert.alert(
-      'Pacto selado',
-      'O pacto foi selado! A crônica da sua taverna foi atualizada.',
+      'Confirmação de contratação',
+      `Deseja contratar ${item.name} para o dia ${eventLabel}?`,
       [
         {
-          text: 'OK',
-          onPress: () => navigation?.goBack?.(),
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Selar Pacto',
+          onPress: () => {
+            Alert.alert(
+              'Pacto selado',
+              'O pacto foi selado! A crônica da sua taverna foi atualizada.',
+              [
+                {
+                  text: 'OK',
+                  onPress: () => navigation?.goBack?.(),
+                },
+              ]
+            );
+          },
         },
       ]
     );
+  };
+
+  const handleOpenPortfolio = () => {
+    navigation?.navigate?.('ArtistProfile', {
+      artistProfileId: item.artistProfileId,
+      artistPreviewName: item.name,
+    });
   };
 
   return (
@@ -69,6 +103,22 @@ function ApplicantCard({ item, navigation }) {
         <Text style={styles.xpText}>{item.xp}</Text>
       </View>
 
+      <View style={styles.detailRow}>
+        <Ionicons name="library-outline" size={16} color={THEME.colors.primary} />
+        <Text style={styles.detailText}>Repertório: {item.repertoire}</Text>
+      </View>
+
+      <View style={styles.detailRow}>
+        <Ionicons name="musical-notes-outline" size={16} color={THEME.colors.primary} />
+        <Text style={styles.detailText}>Instrumentação: {item.instrumentation}</Text>
+      </View>
+
+      <Text style={styles.bio}>{item.bio}</Text>
+
+      <TouchableOpacity style={styles.portfolioButton} onPress={handleOpenPortfolio} activeOpacity={0.9}>
+        <Text style={styles.portfolioButtonText}>Ver Portfólio</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.hireButton} onPress={handleHire} activeOpacity={0.92}>
         <Text style={styles.hireButtonText}>Selar Pacto (Contratar)</Text>
       </TouchableOpacity>
@@ -76,18 +126,27 @@ function ApplicantCard({ item, navigation }) {
   );
 }
 
-export default function ApplicantList({ navigation }) {
+export default function ApplicantList({ navigation, route }) {
+  const eventLabel = useMemo(() => {
+    const day = route?.params?.day;
+    const date = route?.params?.date;
+    if (day && date) return `${day} (${date})`;
+    if (date) return date;
+    return 'a data selecionada';
+  }, [route?.params?.day, route?.params?.date]);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Mural de Candidatos</Text>
         <Text style={styles.subtitle}>Escolha o bardo que vai assumir o palco desta data.</Text>
+        <Text style={styles.eventLabel}>Agenda: {eventLabel}</Text>
       </View>
 
       <FlatList
         data={APPLICANTS}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ApplicantCard item={item} navigation={navigation} />}
+        renderItem={({ item }) => <ApplicantCard item={item} navigation={navigation} eventLabel={eventLabel} />}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
@@ -116,6 +175,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Lato_400Regular',
     fontSize: 14,
     lineHeight: 20,
+  },
+  eventLabel: {
+    marginTop: 10,
+    color: '#E7C95E',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.7,
   },
   listContent: {
     paddingHorizontal: 20,
@@ -172,6 +239,39 @@ const styles = StyleSheet.create({
     color: '#9EDBB8',
     fontFamily: 'Lato_700Bold',
     fontSize: 12,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  detailText: {
+    flex: 1,
+    marginLeft: 8,
+    color: '#DADADA',
+    fontFamily: 'Lato_400Regular',
+    lineHeight: 19,
+  },
+  bio: {
+    color: '#B8B8B8',
+    fontFamily: 'Lato_400Regular',
+    lineHeight: 21,
+    marginTop: 6,
+    marginBottom: 14,
+  },
+  portfolioButton: {
+    backgroundColor: '#1A1A1A',
+    borderRadius: 14,
+    paddingVertical: 13,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#323232',
+    marginBottom: 10,
+  },
+  portfolioButtonText: {
+    color: THEME.colors.primary,
+    fontFamily: 'Lato_700Bold',
+    fontSize: 14,
   },
   hireButton: {
     backgroundColor: '#D4B23A',
