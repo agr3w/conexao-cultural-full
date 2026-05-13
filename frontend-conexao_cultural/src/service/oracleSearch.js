@@ -62,6 +62,7 @@ export function getOracleResults({ searchText = '', selectedVibe = null, selecte
   }));
 
   const places = PLACES.map((p) => ({
+    ...p,
     id: `place:${p.id}`,
     type: 'place',
     placeId: p.id,
@@ -74,7 +75,6 @@ export function getOracleResults({ searchText = '', selectedVibe = null, selecte
     description: p.description,
     tags: [p.vibe, p.category, p.heat].filter(Boolean).join(' • '),
     createdAt: null,
-    ...p,
   }));
 
   const communities = listFanCommunities().map((c) => ({
