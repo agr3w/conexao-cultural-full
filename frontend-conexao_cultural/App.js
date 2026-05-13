@@ -548,8 +548,9 @@ function AppContent() {
           name="ComposeRitual"
           options={TRANSITION_PRESETS.composeModal}
         >
-          {({ navigation }) => (
+          {({ navigation, route }) => (
             <ComposeRitual
+              route={route}
               userProfile={tempProfile}
               ownerUserId="u_artist_1"
               artistProfileId={activeArtistProfileId}

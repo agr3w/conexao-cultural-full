@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, FlatList, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '../styles/colors';
 
@@ -46,7 +46,7 @@ function getStarFill(index, rating) {
   return 'star-outline';
 }
 
-function ApplicantCard({ item, navigation, eventLabel }) {
+function ApplicantCard({ item, navigation, eventLabel, onConfirm, onSuccess }) {
   const handleHire = () => {
     Alert.alert(
       'Confirmação de contratação',
@@ -59,16 +59,8 @@ function ApplicantCard({ item, navigation, eventLabel }) {
         {
           text: 'Selar Pacto',
           onPress: () => {
-            Alert.alert(
-              'Pacto selado',
-              'O pacto foi selado! A crônica da sua taverna foi atualizada.',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => navigation?.goBack?.(),
-                },
-              ]
-            );
+            onConfirm?.(item.name);
+            onSuccess?.(item.name);
           },
         },
       ]
@@ -127,13 +119,43 @@ function ApplicantCard({ item, navigation, eventLabel }) {
 }
 
 export default function ApplicantList({ navigation, route }) {
+  const onConfirm = route?.params?.onConfirm;
+  const [successVisible, setSuccessVisible] = useState(false);
+  const [successArtistName, setSuccessArtistName] = useState('');
+  const successTimeoutRef = useRef(null);
+
+  useEffect(() => () => {
+    if (successTimeoutRef.current) {
+      clearTimeout(successTimeoutRef.current);
+    }
+  }, []);
+
+  const handleSuccess = (artistName) => {
+    setSuccessArtistName(artistName);
+    setSuccessVisible(true);
+
+    if (successTimeoutRef.current) {
+      clearTimeout(successTimeoutRef.current);
+    }
+
+    successTimeoutRef.current = setTimeout(() => {
+      setSuccessVisible(false);
+      navigation?.goBack?.();
+    }, 1100);
+  };
+
   const eventLabel = useMemo(() => {
+    const explicitLabel = route?.params?.eventLabel;
+    if (explicitLabel) return explicitLabel;
+
+    const eventId = route?.params?.eventId;
     const day = route?.params?.day;
     const date = route?.params?.date;
     if (day && date) return `${day} (${date})`;
     if (date) return date;
+    if (eventId) return `evento ${eventId}`;
     return 'a data selecionada';
-  }, [route?.params?.day, route?.params?.date]);
+  }, [route?.params?.eventLabel, route?.params?.eventId, route?.params?.day, route?.params?.date]);
 
   return (
     <View style={styles.container}>
@@ -146,10 +168,30 @@ export default function ApplicantList({ navigation, route }) {
       <FlatList
         data={APPLICANTS}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ApplicantCard item={item} navigation={navigation} eventLabel={eventLabel} />}
+        renderItem={({ item }) => (
+          <ApplicantCard
+            item={item}
+            navigation={navigation}
+            eventLabel={eventLabel}
+            onConfirm={onConfirm}
+            onSuccess={handleSuccess}
+          />
+        )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
+
+      <Modal transparent visible={successVisible} animationType="fade" statusBarTranslucent>
+        <View style={styles.successOverlay}>
+          <View style={styles.successCard}>
+            <View style={styles.successIconWrap}>
+              <Ionicons name="checkmark-circle" size={72} color="#29D97D" />
+            </View>
+            <Text style={styles.successTitle}>Pacto selado</Text>
+            <Text style={styles.successText}>{successArtistName} agora está contratado e a agenda foi atualizada.</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -285,5 +327,46 @@ const styles = StyleSheet.create({
     color: '#111111',
     fontFamily: 'Lato_700Bold',
     fontSize: 14,
+  },
+  successOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.72)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  successCard: {
+    width: '100%',
+    maxWidth: 320,
+    backgroundColor: '#101A12',
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: '#29D97D',
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  successIconWrap: {
+    width: 92,
+    height: 92,
+    borderRadius: 46,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(41, 217, 125, 0.08)',
+    marginBottom: 12,
+  },
+  successTitle: {
+    color: '#D8F8E4',
+    fontFamily: 'Cinzel_700Bold',
+    fontSize: 22,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  successText: {
+    color: '#B5E9C9',
+    fontFamily: 'Lato_400Regular',
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
   },
 });

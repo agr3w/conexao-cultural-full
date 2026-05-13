@@ -156,6 +156,7 @@ function PressScale({ children, onPress, style, activeOpacity = 0.95, disabled =
 export default function ComposeRitual({
   onBack,
   onPublished,
+  route,
   userProfile = 'viewer',
   ownerUserId = 'u_artist_1',
   artistProfileId,
@@ -588,6 +589,7 @@ export default function ComposeRitual({
       setPollDraft('');
       setPollOptions(['']);
 
+      route?.params?.onComplete?.();
       onPublished?.();
     } catch (e) {
       alert(e?.message || 'Falha ao publicar.');

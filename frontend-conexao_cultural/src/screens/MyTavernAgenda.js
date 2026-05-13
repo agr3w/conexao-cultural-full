@@ -1,35 +1,41 @@
-import React from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '../styles/colors';
 
 const WEEK_AGENDA = [
-  { id: 'mon', day: 'Segunda', date: '13/05', status: 'empty', candidateCount: 0, confirmedCount: 0, health: 5 },
-  { id: 'tue', day: 'Terça', date: '14/05', status: 'open', candidateCount: 3, confirmedCount: 0, health: 28 },
-  { id: 'wed', day: 'Quarta', date: '15/05', status: 'confirmed', artistName: 'O Bardo Misterioso', time: '22:00', candidateCount: 1, confirmedCount: 42, health: 92 },
-  { id: 'thu', day: 'Quinta', date: '16/05', status: 'empty', candidateCount: 0, confirmedCount: 0, health: 10 },
-  { id: 'fri', day: 'Sexta', date: '17/05', status: 'open', candidateCount: 7, confirmedCount: 0, health: 45 },
-  { id: 'sat', day: 'Sábado', date: '18/05', status: 'confirmed', artistName: 'Cavaleiro do Som', time: '23:30', candidateCount: 2, confirmedCount: 87, health: 100 },
-  { id: 'sun', day: 'Domingo', date: '19/05', status: 'empty', candidateCount: 0, confirmedCount: 0, health: 8 },
+  { id: 'mon', day: 'Segunda', date: '13/05', status: 'vazio', candidateCount: 0, confirmedCount: 0, health: 5 },
+  { id: 'tue', day: 'Terça', date: '14/05', status: 'aberto', candidateCount: 3, confirmedCount: 0, health: 28 },
+  { id: 'wed', day: 'Quarta', date: '15/05', status: 'confirmado', artistName: 'O Bardo Misterioso', time: '22:00', candidateCount: 1, confirmedCount: 42, health: 92 },
+  { id: 'thu', day: 'Quinta', date: '16/05', status: 'vazio', candidateCount: 0, confirmedCount: 0, health: 10 },
+  { id: 'fri', day: 'Sexta', date: '17/05', status: 'aberto', candidateCount: 7, confirmedCount: 0, health: 45 },
+  { id: 'sat', day: 'Sábado', date: '18/05', status: 'confirmado', artistName: 'Cavaleiro do Som', time: '23:30', candidateCount: 2, confirmedCount: 87, health: 100 },
+  { id: 'sun', day: 'Domingo', date: '19/05', status: 'vazio', candidateCount: 0, confirmedCount: 0, health: 8 },
 ];
 
 function getHealthMeta(health = 0) {
-  if (health >= 80) {
-    return { label: 'Saúde alta', color: '#29D97D' };
-  }
-
-  if (health >= 45) {
-    return { label: 'Saúde estável', color: '#E7C95E' };
-  }
-
+  if (health >= 80) return { label: 'Saúde alta', color: '#29D97D' };
+  if (health >= 45) return { label: 'Saúde estável', color: '#E7C95E' };
   return { label: 'Saúde baixa', color: '#E36A1F' };
 }
 
-function AgendaCard({ item, navigation }) {
-  const isOpen = item.status === 'open';
-  const isConfirmed = item.status === 'confirmed';
+function getStatusMeta(status) {
+  if (status === 'confirmado') return { label: 'Confirmado', color: '#29D97D', textColor: '#07110A', icon: 'shield-checkmark' };
+  if (status === 'aberto') return { label: 'Chamado Aberto', color: '#E7C95E', textColor: '#111111', icon: 'time-outline' };
+  return { label: 'Vazio', color: '#343434', textColor: '#EAEAEA', icon: 'ellipse-outline' };
+}
+
+function AgendaCard({ item, navigation, onCreateEvent, onConfirmArtist }) {
   const healthMeta = getHealthMeta(item.health);
+  const statusMeta = getStatusMeta(item.status);
+  const isEmpty = item.status === 'vazio';
+  const isOpen = item.status === 'aberto';
+  const isConfirmed = item.status === 'confirmado';
   const healthWidth = `${Math.max(8, Math.min(item.health || 0, 100))}%`;
+
+  const handleManageDetails = () => {
+    navigation?.navigate?.('EventDetails', { eventId: item.id });
+  };
 
   return (
     <View style={[styles.card, isOpen && styles.cardOpen, isConfirmed && styles.cardConfirmed]}>
@@ -39,12 +45,10 @@ function AgendaCard({ item, navigation }) {
           <Text style={styles.dateText}>{item.date}</Text>
         </View>
 
-        {isConfirmed && (
-          <View style={styles.confirmBadge}>
-            <Ionicons name="shield-checkmark" size={14} color="#07110A" />
-            <Text style={styles.confirmBadgeText}>Selo</Text>
-          </View>
-        )}
+        <View style={[styles.statusBadge, { backgroundColor: statusMeta.color }]}>
+          <Ionicons name={statusMeta.icon} size={14} color={statusMeta.textColor} />
+          <Text style={[styles.statusBadgeText, { color: statusMeta.textColor }]}>{statusMeta.label}</Text>
+        </View>
       </View>
 
       <View style={styles.healthBlock}>
@@ -58,40 +62,59 @@ function AgendaCard({ item, navigation }) {
         </View>
       </View>
 
-      {item.status === 'empty' && (
+      {isEmpty && (
         <>
           <Text style={styles.emptyText}>Nenhum chamado mapeado para este dia.</Text>
           <Text style={styles.metricText}>Sugestão: crie um evento para começar a atrair presença.</Text>
           <TouchableOpacity
             style={[styles.actionButton, styles.actionButtonPrimary]}
-            onPress={() => Alert.alert('Novo ciclo', 'Criar evento ou chamado foi acionado no grimório da taverna.')}
+            onPress={() => navigation?.navigate?.('ComposeRitual', { onComplete: () => onCreateEvent?.(item.id) })}
           >
-            <Text style={styles.actionButtonPrimaryText}>Criar Evento ou Chamado</Text>
+            <Text style={styles.actionButtonPrimaryText}>Abrir Chamado</Text>
           </TouchableOpacity>
         </>
       )}
 
-      {item.status === 'open' && (
+      {isOpen && (
         <>
-          <Text style={styles.openText}>Aguardando Candidatos</Text>
+          <Text style={styles.openText}>Chamado aberto para candidatos</Text>
           <Text style={styles.metricText}>{item.candidateCount} Bardos Candidatados</Text>
           <TouchableOpacity
             style={[styles.actionButton, styles.actionButtonYellow]}
-            onPress={() => navigation?.navigate?.('ApplicantList', { day: item.day, date: item.date })}
+            onPress={() => navigation?.navigate?.('ApplicantList', {
+              eventId: item.id,
+              eventLabel: `${item.day} (${item.date})`,
+              onConfirm: (name) => onConfirmArtist?.(item.id, name),
+            })}
           >
-            <Text style={styles.actionButtonYellowText}>Gerenciar Candidatos</Text>
+            <Text style={styles.actionButtonYellowText}>Ver Candidatos</Text>
           </TouchableOpacity>
         </>
       )}
 
-      {item.status === 'confirmed' && (
+      {isConfirmed && (
         <>
-          <View style={styles.confirmRow}>
-            <Ionicons name="checkmark-circle" size={20} color="#29D97D" />
-            <Text style={styles.confirmText}>{item.artistName}</Text>
+          <View style={styles.confirmHeader}>
+            <View style={styles.confirmRow}>
+              <View style={styles.confirmIconWrap}>
+                <Ionicons name="wine-outline" size={18} color="#E7C95E" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.confirmText}>{item.artistName}</Text>
+                <Text style={styles.confirmSubtext}>Pacto Selado: {item.artistName} - {item.time}</Text>
+              </View>
+            </View>
+            <View style={styles.confirmSeal}>
+              <Ionicons name="shield-checkmark" size={14} color="#0F1A11" />
+              <Text style={styles.confirmSealText}>Confirmado</Text>
+            </View>
           </View>
-          <Text style={styles.metricText}>{item.time} • {item.confirmedCount} seguidores confirmaram presença</Text>
+          <Text style={styles.metricText}>{item.confirmedCount} seguidores confirmaram presença</Text>
           <Text style={styles.confirmHelper}>Show confirmado e pronto para o ritual.</Text>
+          <TouchableOpacity style={styles.manageButton} onPress={handleManageDetails} activeOpacity={0.92}>
+            <Ionicons name="chevron-forward" size={14} color="#E7C95E" />
+            <Text style={styles.manageButtonText}>Gerenciar Detalhes</Text>
+          </TouchableOpacity>
         </>
       )}
     </View>
@@ -99,6 +122,24 @@ function AgendaCard({ item, navigation }) {
 }
 
 export default function MyTavernAgenda({ navigation }) {
+  const [agenda, setAgenda] = useState(() => WEEK_AGENDA);
+
+  const handleCreateEvent = (dayId) => {
+    setAgenda((current) => current.map((item) => (
+      item.id === dayId
+        ? { ...item, status: 'aberto', candidateCount: item.candidateCount || 0, confirmedCount: 0, artistName: undefined, time: undefined }
+        : item
+    )));
+  };
+
+  const handleConfirmArtist = (dayId, artistName) => {
+    setAgenda((current) => current.map((item) => (
+      item.id === dayId
+        ? { ...item, status: 'confirmado', artistName, candidateCount: item.candidateCount || 0, confirmedCount: Math.max(item.confirmedCount || 0, 1), time: item.time || '22:00' }
+        : item
+    )));
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -107,9 +148,16 @@ export default function MyTavernAgenda({ navigation }) {
       </View>
 
       <FlatList
-        data={WEEK_AGENDA}
+        data={agenda}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <AgendaCard item={item} navigation={navigation} />}
+        renderItem={({ item }) => (
+          <AgendaCard
+            item={item}
+            navigation={navigation}
+            onCreateEvent={handleCreateEvent}
+            onConfirmArtist={handleConfirmArtist}
+          />
+        )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
@@ -159,6 +207,35 @@ const styles = StyleSheet.create({
     borderColor: '#214C2E',
     backgroundColor: '#0F1A11',
   },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  dayText: {
+    color: '#F2F2F2',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 18,
+  },
+  dateText: {
+    color: '#A0A0A0',
+    fontFamily: 'Lato_400Regular',
+    fontSize: 13,
+    marginTop: 3,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    gap: 6,
+  },
+  statusBadgeText: {
+    fontFamily: 'Lato_700Bold',
+    fontSize: 12,
+  },
   healthBlock: {
     marginBottom: 14,
   },
@@ -194,37 +271,6 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 999,
   },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  dayText: {
-    color: '#F2F2F2',
-    fontFamily: 'Lato_700Bold',
-    fontSize: 18,
-  },
-  dateText: {
-    color: '#A0A0A0',
-    fontFamily: 'Lato_400Regular',
-    fontSize: 13,
-    marginTop: 3,
-  },
-  confirmBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#D4B23A',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    gap: 6,
-  },
-  confirmBadgeText: {
-    color: '#07110A',
-    fontFamily: 'Lato_700Bold',
-    fontSize: 12,
-  },
   emptyText: {
     color: '#C9C9C9',
     fontFamily: 'Lato_400Regular',
@@ -247,15 +293,73 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 8,
   },
+  confirmHeader: {
+    borderWidth: 1,
+    borderColor: '#C8A94B',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 12,
+    backgroundColor: 'rgba(231, 201, 94, 0.06)',
+  },
+  confirmIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(231, 201, 94, 0.12)',
+    marginRight: 10,
+  },
   confirmText: {
     color: '#D8F8E4',
     fontFamily: 'Lato_700Bold',
     fontSize: 16,
   },
+  confirmSubtext: {
+    marginTop: 4,
+    color: '#E7C95E',
+    fontFamily: 'Lato_400Regular',
+    fontSize: 12,
+  },
+  confirmSeal: {
+    alignSelf: 'flex-start',
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#E7C95E',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  confirmSealText: {
+    color: '#111111',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 11,
+    letterSpacing: 0.4,
+  },
   confirmHelper: {
     color: '#9FD6B6',
     fontFamily: 'Lato_400Regular',
     fontSize: 13,
+    marginBottom: 12,
+  },
+  manageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 999,
+    backgroundColor: '#171717',
+    borderWidth: 1,
+    borderColor: '#3A3A3A',
+    gap: 6,
+  },
+  manageButtonText: {
+    color: '#E7C95E',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 12,
   },
   actionButton: {
     marginTop: 2,
