@@ -14,65 +14,7 @@ const ORACLE_FILTERS = [
   { id: 'community', label: 'Comunidades', icon: 'people' },
 ];
 
-const ORACLE_PLACES = [
-  {
-    id: 'place_oracle_1',
-    type: 'place',
-    name: 'Pizzaria Gótica',
-    category: 'Pizzaria',
-    vibe: 'Gótica',
-    address: 'Rua das Sombras, 1313 - Centro',
-    description: 'Pizzas artesanais, decoração sombria e noites para bandas intensas.',
-    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800',
-  },
-  {
-    id: 'place_oracle_2',
-    type: 'place',
-    name: 'Casa de Rock',
-    category: 'Bar',
-    vibe: 'Rock Clássico',
-    address: 'Av. do Amplificador, 45 - Distrito Musical',
-    description: 'Palco vibrante, chope gelado e espaço para shows autorais e covers.',
-    image: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=800',
-  },
-  {
-    id: 'place_oracle_3',
-    type: 'place',
-    name: 'Clube Underground',
-    category: 'Casa de Shows',
-    vibe: 'Underground',
-    address: 'Travessa do Subsolo, 77 - Galeria Central',
-    description: 'Espaço para experimental, noise, eletrônico e noites fora da curva.',
-    image: 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=800',
-  },
-];
 
-const ORACLE_ARTISTS = [
-  {
-    id: 'artist_oracle_1',
-    name: 'O Bardo Misterioso',
-    vibe: 'Acústico / Folk',
-    avgPrice: '200 Moedas / R$ 120',
-    availability: 'Disponível hoje',
-    description: 'Canções íntimas para noites de ritual e sala cheia.',
-  },
-  {
-    id: 'artist_oracle_2',
-    name: 'Lira de Aço',
-    vibe: 'Rock / Alternativo',
-    avgPrice: '340 Moedas / R$ 200',
-    availability: 'Janela de agenda aberta',
-    description: 'Energia de palco e presença de arena para o seu local.',
-  },
-  {
-    id: 'artist_oracle_3',
-    name: 'Coro da Madrugada',
-    vibe: 'MPB / Atmosférico',
-    avgPrice: '260 Moedas / R$ 150',
-    availability: 'Últimas vagas desta semana',
-    description: 'Texturas elegantes para rituais mais sofisticados.',
-  },
-];
 
 function PressScale({ children, onPress, style, activeOpacity = 0.96 }) {
   const pressAnim = useRef(new Animated.Value(1)).current;
@@ -187,75 +129,7 @@ export default function Oracle({ onResultPress }) {
     return topTrendingResults.filter((item) => isRecentlyCreated(item.createdAt));
   }, [viewMode, showOnlyNewTrending, topTrendingResults, filteredResults]);
 
-  const displayedArtists = useMemo(() => {
-    if (selectedFilter !== 'all' && selectedFilter !== 'artist') return [];
 
-    const query = searchText.trim().toLowerCase();
-    return ORACLE_ARTISTS.filter((artist) => {
-      if (!query) return true;
-      return [artist.name, artist.vibe, artist.avgPrice, artist.availability, artist.description]
-        .join(' ')
-        .toLowerCase()
-        .includes(query);
-    });
-  }, [searchText, selectedFilter]);
-
-  const newTrendingCount = useMemo(
-    () => topTrendingResults.filter((item) => isRecentlyCreated(item.createdAt)).length,
-    [topTrendingResults]
-  );
-
-  const handleOpenPlace = (place) => {
-    onResultPress?.(place);
-  };
-
-  const handleOpenArtist = (artist) => {
-    navigation?.navigate?.('ArtistProfile', { artistData: artist });
-  };
-
-  const renderPlaceCard = ({ item }) => (
-    <PressScale
-      style={styles.placeCardWrap}
-      onPress={() => handleOpenPlace(item)}
-    >
-      <View style={styles.placeCard}>
-        <Image source={{ uri: item.image }} style={styles.placeImage} />
-        <View style={styles.placeOverlay} />
-        <View style={styles.placeContent}>
-          <Text style={styles.placeName} numberOfLines={1}>{item.name}</Text>
-          <Text style={styles.placeVibe} numberOfLines={1}>{item.vibe}</Text>
-        </View>
-      </View>
-    </PressScale>
-  );
-
-  const renderArtistCard = ({ item }) => (
-    <PressScale style={styles.artistCardWrap} onPress={() => handleOpenArtist(item)}>
-      <View style={styles.artistCard}>
-        <View style={styles.artistArtTop}>
-          <View style={styles.artistPortraitWrap}>
-            <Ionicons name="person-circle-outline" size={42} color={THEME.colors.primary} />
-          </View>
-          <View style={styles.artistPricePill}>
-            <Ionicons name="cash-outline" size={12} color="#111111" />
-            <Text style={styles.artistPriceText}>{item.avgPrice}</Text>
-          </View>
-        </View>
-
-        <Text style={styles.artistName} numberOfLines={1}>{item.name}</Text>
-        <Text style={styles.artistVibe} numberOfLines={1}>{item.vibe}</Text>
-        <Text style={styles.artistDescription} numberOfLines={2}>{item.description}</Text>
-
-        <View style={styles.artistFooter}>
-          <View style={styles.artistAvailabilityPill}>
-            <Ionicons name="sparkles-outline" size={12} color="#E7C95E" />
-            <Text style={styles.artistAvailabilityText}>{item.availability}</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={16} color="#777" />
-        </View>
-      </View>
-    </PressScale>
-  );
 
   return (
     <View style={styles.container}>
@@ -325,47 +199,6 @@ export default function Oracle({ onResultPress }) {
         </ScrollView>
       </View>
 
-      <View style={styles.placesSection}>
-        {selectedFilter === 'artist' && (
-          <View style={styles.artistsSection}>
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>Artistas</Text>
-              <Text style={styles.sectionHint}>Bardos de última hora</Text>
-            </View>
-
-            <FlatList
-              data={displayedArtists}
-              keyExtractor={(item) => item.id}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.artistsList}
-              renderItem={renderArtistCard}
-              ListEmptyComponent={(
-                <View style={styles.emptyWrapArtist}>
-                  <Ionicons name="musical-notes-outline" size={26} color="#666" />
-                  <Text style={styles.emptyText}>Nenhum artista encontrado no momento.</Text>
-                  <Text style={styles.emptySubText}>Tente outro termo de busca ou limpe os filtros.</Text>
-                </View>
-              )}
-            />
-          </View>
-        )}
-
-        <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>Locais</Text>
-          <Text style={styles.sectionHint}>Cadastrados no grimório</Text>
-        </View>
-
-        <FlatList
-          data={ORACLE_PLACES}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.placesList}
-          renderItem={renderPlaceCard}
-        />
-      </View>
-
       {viewMode === 'trending' && (
         <View style={styles.trendingToolsRow}>
           <PressScale style={styles.quickFilterWrap} onPress={() => setShowOnlyNewTrending((prev) => !prev)}>
@@ -376,14 +209,13 @@ export default function Oracle({ onResultPress }) {
                 color={showOnlyNewTrending ? '#000' : THEME.colors.primary}
               />
               <Text style={[styles.quickFilterText, showOnlyNewTrending && styles.quickFilterTextActive]}>
-                Só NOVOS ({newTrendingCount})
+                Só NOVOS
               </Text>
             </View>
           </PressScale>
         </View>
       )}
 
-      {selectedFilter !== 'artist' && (
       <FlatList
         data={displayedResults}
         keyExtractor={(item) => item.id}
@@ -416,7 +248,6 @@ export default function Oracle({ onResultPress }) {
           </PressScale>
         )}
       />
-      )}
 
     </View>
   );
