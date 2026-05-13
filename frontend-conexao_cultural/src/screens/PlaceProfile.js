@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Modal, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '../styles/colors';
 
@@ -36,15 +36,19 @@ export default function PlaceProfile({ place, onBack, onOpenMap, userProfile = '
     capacity: place?.capacity || 180,
   }), [place]);
 
-  const actionLabel = isArtist ? 'Oferecer Show' : 'Ver Próximos Eventos';
+  const [modalVisible, setModalVisible] = useState(false);
+  const [tributeSent, setTributeSent] = useState(false);
+
+  const actionLabel = isArtist ? (tributeSent ? 'Chama Enviada (Aguardando)' : 'Oferecer Tributo (Tocar Aqui)') : 'Ver Próximos Eventos';
 
   const handlePrimaryAction = () => {
     if (isArtist) {
-      alert('Sua oferta de show foi preparada para o estabelecimento.');
+      if (tributeSent) return;
+      setModalVisible(true);
       return;
     }
 
-    alert('Abrindo os próximos eventos desta taverna.');
+    Alert.alert('Próximos Eventos', 'Abrindo os próximos eventos desta taverna.');
   };
 
   return (
@@ -118,6 +122,42 @@ export default function PlaceProfile({ place, onBack, onOpenMap, userProfile = '
           <Text style={styles.secondaryActionText}>Ver no Mapa</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Enviar seu Grimório (Portfólio)?</Text>
+            <Text style={styles.modalText}>
+              O Anfitrião desta taverna receberá seu perfil para avaliação.
+            </Text>
+            <View style={styles.modalButtonsRow}>
+              <TouchableOpacity
+                style={styles.modalButtonCancel}
+                onPress={() => setModalVisible(false)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.modalButtonCancelText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButtonSubmit}
+                onPress={() => {
+                  setModalVisible(false);
+                  setTributeSent(true);
+                  Alert.alert('Sucesso', 'Portfólio enviado!');
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.modalButtonSubmitText}>Enviar Chama</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -261,5 +301,68 @@ const styles = StyleSheet.create({
     color: THEME.colors.primary,
     fontFamily: 'Lato_700Bold',
     fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 340,
+    backgroundColor: '#141414',
+    borderWidth: 1,
+    borderColor: '#332B1A',
+    borderRadius: 20,
+    padding: 22,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    color: '#F4E1A6',
+    fontFamily: 'Cinzel_700Bold',
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  modalText: {
+    color: '#B0B0B0',
+    fontFamily: 'Lato_400Regular',
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 22,
+  },
+  modalButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalButtonCancel: {
+    flex: 1,
+    backgroundColor: '#1E1E1E',
+    borderWidth: 1,
+    borderColor: '#333',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalButtonCancelText: {
+    color: '#999',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 14,
+  },
+  modalButtonSubmit: {
+    flex: 1,
+    backgroundColor: THEME.colors.primary,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalButtonSubmitText: {
+    color: '#111',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 14,
   },
 });

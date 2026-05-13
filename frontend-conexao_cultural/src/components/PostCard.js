@@ -101,6 +101,7 @@ export default function PostCard({
 
   const [pollState, setPollState] = useState(initialPollOptions);
   const [selectedPollOptionId, setSelectedPollOptionId] = useState(null);
+  const [isApplied, setIsApplied] = useState(false);
 
   const pollQuestion = isPoll
     ? String(data.text || '')
@@ -329,9 +330,13 @@ export default function PostCard({
       {isGig && userProfile === 'artist' && (
         <View style={{ marginTop: 10, marginBottom: 10 }}>
           <Button
-            title="Oferecer Tributo (Candidatar-se)"
-            type="primary"
-            onPress={() => onApplyGig?.(data.id)}
+            title={isApplied ? 'Candidatura Enviada' : 'Oferecer Tributo (Candidatar-se)'}
+            type={isApplied ? 'success' : 'primary'}
+            disabled={isApplied}
+            onPress={() => {
+              setIsApplied(true);
+              onApplyGig?.(data.id);
+            }}
           />
         </View>
       )}
