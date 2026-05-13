@@ -291,7 +291,7 @@ export default function PostCard({
 
             return (
               <PressScale
-                key={option.id || option.label}
+                key={option.id || `${option.label}-${index}`}
                 style={styles.pollOptionWrap}
                 onPress={() => handleVotePoll(option.id)}
                 disabled={!!selectedPollOptionId}

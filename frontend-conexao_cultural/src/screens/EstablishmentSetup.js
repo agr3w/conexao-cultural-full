@@ -91,11 +91,11 @@ export default function EstablishmentSetup({ navigation }) {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Vibes da Casa</Text>
         <View style={styles.tagRow}>
-          {VIBE_TAGS.map((tag) => {
+          {VIBE_TAGS.map((tag, index) => {
             const selected = selectedVibes.includes(tag);
             return (
               <TouchableOpacity
-                key={tag}
+                key={`${tag}-${index}`}
                 style={[styles.tag, selected && styles.tagSelected]}
                 onPress={() => toggleVibe(tag)}
                 activeOpacity={0.85}

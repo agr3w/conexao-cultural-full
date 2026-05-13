@@ -73,8 +73,8 @@ export default function PlaceProfile({ place, onBack, onOpenMap, userProfile = '
           <Text style={styles.description}>{PLACE.description}</Text>
 
           <View style={styles.tagRow}>
-            {PLACE_VIBES.map((tag) => (
-              <View key={tag} style={styles.tag}>
+            {PLACE_VIBES.map((tag, index) => (
+              <View key={`${tag}-${index}`} style={styles.tag}>
                 <Text style={styles.tagText}>{tag}</Text>
               </View>
             ))}

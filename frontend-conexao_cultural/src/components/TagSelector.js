@@ -13,11 +13,11 @@ export default function TagSelector({ selectedTags, onToggle }) {
     return (
         <View style={styles.container}>
             <View style={styles.tagsContainer}>
-                {TAGS.map((tag) => {
+                {TAGS.map((tag, index) => {
                     const isSelected = selectedTags.includes(tag);
                     return (
                         <TouchableOpacity
-                            key={tag}
+                            key={`${tag}-${index}`}
                             style={[
                                 styles.tag,
                                 isSelected && styles.tagSelected
