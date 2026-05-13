@@ -33,6 +33,7 @@ import ArtistInsights from './src/screens/ArtistInsights';
 import CommunityFeed from './src/screens/CommunityFeed';
 import ComposeRitual from './src/screens/ComposeRitual';
 import EditProfile from './src/screens/EditProfile';
+import ContractProposal from './src/screens/ContractProposal';
 
 import { getPostById } from './src/service/feedPosts';
 import { getDefaultArtistProfile, createArtistProfile, ensureLabArtistProfile, getArtistProfileById } from './src/service/artistProfiles';
@@ -648,6 +649,7 @@ function AppContent() {
 
             return (
               <ArtistProfile
+                navigation={navigation}
                 artistProfileId={profileId}
                 artistPreviewName={previewName}
                 onBack={() => goBackSafely(navigation)}
@@ -657,6 +659,8 @@ function AppContent() {
                 }}
                 onOpenCommunity={() => {
                   if (!profileId) {
+
+            <Stack.Screen name="ContractProposal" component={ContractProposal} />
                     Alert.alert('Ops', 'Este perfil pode ter sido deletado ou não está mais disponível.');
                     return;
                   }

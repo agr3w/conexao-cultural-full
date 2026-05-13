@@ -33,6 +33,7 @@ export default function ArtistProfile({
   onBack,
   onOpenCommunity,
   onEditProfile,
+  navigation,
   artistProfileId,
   artistPreviewName,
 }) {
@@ -115,7 +116,7 @@ export default function ArtistProfile({
           <Button
             title="Oferecer Tributo (Contratar)"
             type="primary"
-            onPress={() => alert('Abrindo proposta de contrato...')}
+            onPress={() => navigation?.navigate?.('ContractProposal')}
           />
         </View>
 

@@ -51,7 +51,7 @@ const FEED_POSTS = [
   },
 ];
 
-export default function ArtistHub({ onBack }) {
+export default function ArtistHub({ onBack, navigation }) {
   const [communities, setCommunities] = useState(INITIAL_COMMUNITIES);
   const [selectedCommunityId, setSelectedCommunityId] = useState(INITIAL_COMMUNITIES[0]?.id ?? null);
   const [isCreating, setIsCreating] = useState(false);
@@ -192,7 +192,7 @@ export default function ArtistHub({ onBack }) {
             <Text style={styles.detailSubtitle}>Foco: {selectedCommunity.focus}</Text>
 
             <View style={styles.actionsRow}>
-              <TouchableOpacity style={styles.secondaryAction} onPress={() => alert('Abrindo mural da comunidade...')}>
+              <TouchableOpacity style={styles.secondaryAction} onPress={() => navigation?.navigate?.('CommunityFeed')}>
                 <Text style={styles.secondaryActionText}>Mural</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.secondaryAction} onPress={() => alert('Abrindo lista de membros...')}>

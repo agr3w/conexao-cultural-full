@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, Alert } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '../styles/colors';
@@ -232,6 +232,7 @@ export default function MapScreen({ userProfile = 'viewer', ownerUserId, refresh
   const [selectedViewerRitual, setSelectedViewerRitual] = useState(null);
   const [selectedArtistTavern, setSelectedArtistTavern] = useState(null);
   const [viewerRituals, setViewerRituals] = useState([]);
+  const [pitchModalTavern, setPitchModalTavern] = useState(null);
 
   useEffect(() => {
     const nextRituals = buildViewerRituals(ownerUserId);
@@ -249,6 +250,21 @@ export default function MapScreen({ userProfile = 'viewer', ownerUserId, refresh
 
   const handleOpenViewerRitual = (ritual) => {
     onOpenRitual?.(ritual);
+  };
+
+  const handleOpenPitchModal = (tavern) => {
+    if (!tavern?.hasOpenGig) return;
+    setSelectedArtistTavern(null);
+    setPitchModalTavern(tavern);
+  };
+
+  const closePitchModal = () => {
+    setPitchModalTavern(null);
+  };
+
+  const sendPitch = () => {
+    Alert.alert('Sucesso', 'Candidatura enviada!');
+    closePitchModal();
   };
 
   return (
@@ -318,9 +334,35 @@ export default function MapScreen({ userProfile = 'viewer', ownerUserId, refresh
           item={selectedArtistTavern}
           onClose={() => setSelectedArtistTavern(null)}
           onPlacePress={onPlacePress}
-          onPitchPress={onPitchPress}
+          onPitchPress={handleOpenPitchModal}
         />
       )}
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={Boolean(pitchModalTavern)}
+        onRequestClose={closePitchModal}
+      >
+        <View style={styles.pitchModalOverlay}>
+          <View style={styles.pitchModalContent}>
+            <Text style={styles.pitchModalTitle}>Match Rápido</Text>
+            <Text style={styles.pitchModalText}>
+              Deseja submeter sua chama (portfólio) para esta Taverna?
+            </Text>
+
+            <View style={styles.pitchModalActions}>
+              <TouchableOpacity style={[styles.pitchModalButton, styles.pitchModalCancelButton]} onPress={closePitchModal}>
+                <Text style={styles.pitchModalCancelText}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={[styles.pitchModalButton, styles.pitchModalSendButton]} onPress={sendPitch}>
+                <Text style={styles.pitchModalSendText}>Enviar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -455,5 +497,61 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.45,
     shadowRadius: 8,
     elevation: 4,
+  },
+  pitchModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  pitchModalContent: {
+    backgroundColor: '#171717',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#2C2C2C',
+    padding: 20,
+  },
+  pitchModalTitle: {
+    color: THEME.colors.primary,
+    fontFamily: 'Cinzel_700Bold',
+    fontSize: 22,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  pitchModalText: {
+    color: '#E6E6E6',
+    fontFamily: 'Lato_400Regular',
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
+    marginBottom: 18,
+  },
+  pitchModalActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  pitchModalButton: {
+    flex: 1,
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  pitchModalCancelButton: {
+    backgroundColor: '#262626',
+    borderWidth: 1,
+    borderColor: '#3B3B3B',
+  },
+  pitchModalSendButton: {
+    backgroundColor: THEME.colors.primary,
+  },
+  pitchModalCancelText: {
+    color: '#EAEAEA',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 15,
+  },
+  pitchModalSendText: {
+    color: '#000',
+    fontFamily: 'Lato_700Bold',
+    fontSize: 15,
   },
 });
